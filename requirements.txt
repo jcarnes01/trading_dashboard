@@ -1,3 +1,3 @@
-import streamlit
-import yfinance
-import pandas
+streamlit
+yfinance
+pandas
