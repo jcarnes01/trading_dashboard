@@ -14,3 +14,4 @@ __all__ = [
     "render_opex_widget",
     "render_catalysts_widget",
 ]
+

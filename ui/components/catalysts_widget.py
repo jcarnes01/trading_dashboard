@@ -77,3 +77,4 @@ def render_catalysts_widget(catalysts: List[MarketCatalyst]) -> None:
 
         df_catalysts = pd.DataFrame(table_rows)
         st.dataframe(df_catalysts, use_container_width=True, hide_index=True)
+

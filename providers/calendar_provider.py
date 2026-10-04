@@ -187,3 +187,4 @@ class MockCalendarProvider(BaseCalendarProvider):
                 )
             ]
         return [e for e in self._events if from_date <= e.event_date <= to_date]
+

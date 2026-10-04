@@ -411,3 +411,39 @@ flowchart LR
 - **Phase 6: Integration & Final Polish**
   - Simplify `app.py` to a clean, declarative 20-30 line bootstrap entry point
   - Run full test suite and verify UI functionality
+
+---
+
+## 12. Future Additions & Feature Backlog
+
+The following candidate features are prioritized for upcoming iterations:
+
+### 12.1 Interactive Expiration Dropdown (0DTE vs. Weeklies vs. Monthly OpEx)
+- **Objective:** Give the trader dynamic control over which expiration slice drives the GEX calculations and structural boundaries.
+- **Scope & Behavior:**
+  - Expiration selector in the UI (`Today (0DTE)`, `This Friday (Weekly)`, `Monthly OpEx`, or full chain).
+  - Pass the selected expiration date through `DashboardService` to `OptionsAnalyticsEngine`.
+  - Recalculate Black-Scholes $\Gamma$, per-strike Net GEX, Call/Put GEX walls, and straddle expected move for that specific expiration horizon.
+  - Useful for distinguishing fast intraday dealer pin risk (0DTE) from multi-week structural gamma regimes (Monthly OpEx).
+
+### 12.2 Actionable Trade Leg Generator & Risk/Reward Calculator
+- **Objective:** Automatically bridge the gap between analysis and execution by generating concrete option contract legs matching the active morning bias.
+- **Scope & Behavior:**
+  - Pure calculation engine (`core/analytics/strategy_engine.py`) taking `BiasSignal` and `OptionsStructure`.
+  - Generates concrete strikes:
+    - **Bullish Bias:** Bull Put Credit Spread (short leg anchored near Put GEX Wall / Expected Move Low) or Bull Call Debit Spread.
+    - **Bearish Bias:** Bear Call Credit Spread (short leg anchored near Call GEX Wall / Expected Move High) or Bear Put Debit Spread.
+    - **Neutral / Rangebound Bias:** Defined-risk Iron Condor with short wings at Call and Put GEX walls.
+  - Computes actionable trade metrics: Net credit/debit, Max Profit, Max Loss, Return on Risk (RoR %), and Breakeven strikes.
+  - Interactive UI card rendering visual risk profile diagrams.
+
+### 12.3 One-Click Pre-Market Trading Plan Exporter
+- **Objective:** Provide a fast, friction-free way to export the morning playbook for journaling and team sharing.
+- **Scope & Behavior:**
+  - Generates a cleanly formatted Markdown / Plaintext morning briefing summarizing:
+    - Active Directional Bias and 4-factor scoring breakdown (Yields, DXY, VIX, Breadth).
+    - Spot price, Expected Move boundaries ($[\text{Low}, \text{High}]$), and Key GEX Walls.
+    - Zero Gamma flip point and dealer volatility regime.
+    - Imminent economic catalysts & OpEx timeline for the day/week.
+  - Integrated "Copy to Clipboard" UI button tailored for pasting directly into Notion, Obsidian, Discord, or Slack.
+

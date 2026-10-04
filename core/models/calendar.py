@@ -71,3 +71,4 @@ class MarketCatalyst:
         elif self.category == CatalystCategory.OPTIONS_STRUCTURE:
             return "🔮" if self.is_quad_witching else "📅"
         return "📌"
+

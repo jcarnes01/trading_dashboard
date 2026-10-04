@@ -90,3 +90,4 @@ def test_mock_calendar_provider():
     events = provider.get_economic_events(date(2026, 10, 1), date(2026, 10, 15))
     assert len(events) == 1
     assert events[0].source == "MOCK"
+
