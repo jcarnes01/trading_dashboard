@@ -91,3 +91,24 @@ def test_mock_calendar_provider():
     assert len(events) == 1
     assert events[0].source == "MOCK"
 
+
+def test_resolve_finnhub_api_key_from_env(monkeypatch):
+    from providers.calendar_provider import resolve_finnhub_api_key
+
+    monkeypatch.setenv("FINNHUB_API_KEY", "env_secret_key_123")
+    assert resolve_finnhub_api_key() == "env_secret_key_123"
+
+
+def test_resolve_finnhub_api_key_from_streamlit_secrets(monkeypatch):
+    from unittest.mock import MagicMock
+    import sys
+    from providers.calendar_provider import resolve_finnhub_api_key
+
+    monkeypatch.delenv("FINNHUB_API_KEY", raising=False)
+    mock_st = MagicMock()
+    mock_st.secrets = {"FINNHUB_API_KEY": "streamlit_secret_abc"}
+    monkeypatch.setitem(sys.modules, "streamlit", mock_st)
+
+    assert resolve_finnhub_api_key() == "streamlit_secret_abc"
+
+

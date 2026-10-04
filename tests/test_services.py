@@ -84,3 +84,29 @@ def test_dashboard_service_multi_ticker_qqq_and_iwm():
     assert payload_iwm.options_structure.symbol == "IWM"
     assert payload_iwm.options_structure.underlying_spot == 224.0
     assert payload_iwm.options_structure.call_wall_oi == 225.0
+
+
+def test_dashboard_service_zero_oi_chain_fallback_to_spy():
+    """Verify that when primary chain (e.g. ^SPX) has 0 open interest, it falls back to SPY * 10."""
+    mock_provider = MockDataProvider()
+    # Simulate Yahoo Finance returning zero OI for ^SPX options
+    zero_calls = pd.DataFrame([
+        {"strike": 5000.0, "lastPrice": 25.0, "openInterest": 0.0, "impliedVolatility": 0.15},
+        {"strike": 5100.0, "lastPrice": 10.0, "openInterest": 0.0, "impliedVolatility": 0.14},
+    ])
+    zero_puts = pd.DataFrame([
+        {"strike": 5000.0, "lastPrice": 20.0, "openInterest": 0.0, "impliedVolatility": 0.15},
+        {"strike": 4900.0, "lastPrice": 8.0, "openInterest": 0.0, "impliedVolatility": 0.16},
+    ])
+    mock_provider.set_option_chain("^SPX", "2026-10-16", zero_calls, zero_puts)
+
+    service = DashboardService(provider=mock_provider)
+    struct = service.fetch_options_structure(symbol_key="SPX")
+
+    # Should have triggered fallback to SPY options (scaled by 10)
+    assert struct.is_fallback is True
+    assert struct.call_wall_oi == 5100.0  # From SPY strike 510.0 * 10
+    assert struct.put_wall_oi == 5000.0   # From SPY strike 500.0 * 10
+    assert struct.net_gex_total != 0.0    # GEX is successfully calculated
+    assert len(struct.per_strike_gex) > 0
+

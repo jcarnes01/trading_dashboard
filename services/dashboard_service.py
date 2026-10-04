@@ -124,6 +124,31 @@ class DashboardService:
         nearest_exp = expirations[0]
         calls_df, puts_df = self.provider.get_option_chain(target_symbol, nearest_exp)
 
+        # Check if resolved chain has zero total open interest
+        # (CBOE index tickers like ^SPX on Yahoo Finance regularly report 0 open interest across all strikes)
+        total_oi = (
+            (calls_df["openInterest"].sum() if not calls_df.empty and "openInterest" in calls_df.columns else 0.0) +
+            (puts_df["openInterest"].sum() if not puts_df.empty and "openInterest" in puts_df.columns else 0.0)
+        )
+
+        if total_oi <= 0 and config.fallback_symbol != target_symbol:
+            fallback_exps = self.provider.get_options_expirations(config.fallback_symbol)
+            if fallback_exps:
+                fb_target = config.fallback_symbol
+                fb_exp = fallback_exps[0]
+                fb_calls, fb_puts = self.provider.get_option_chain(fb_target, fb_exp)
+                fb_total_oi = (
+                    (fb_calls["openInterest"].sum() if not fb_calls.empty and "openInterest" in fb_calls.columns else 0.0) +
+                    (fb_puts["openInterest"].sum() if not fb_puts.empty and "openInterest" in fb_puts.columns else 0.0)
+                )
+                if fb_total_oi > 0:
+                    target_symbol = fb_target
+                    nearest_exp = fb_exp
+                    calls_df = fb_calls
+                    puts_df = fb_puts
+                    multiplier = config.fallback_multiplier
+                    is_chain_fallback = True
+
         # Scale fallback strikes and prices if using scaled proxy
         if multiplier != 1.0 and not calls_df.empty and not puts_df.empty:
             calls_df = calls_df.copy()

@@ -60,6 +60,33 @@ class FallbackScheduleProvider(BaseCalendarProvider):
         return results
 
 
+def resolve_finnhub_api_key(explicit_key: Optional[str] = None) -> str:
+    """Resolve Finnhub API key from argument, environment, or Streamlit secrets."""
+    if explicit_key and explicit_key.strip():
+        return explicit_key.strip()
+
+    env_key = os.getenv("FINNHUB_API_KEY", "").strip()
+    if env_key:
+        return env_key
+
+    try:
+        import streamlit as st
+        if hasattr(st, "secrets"):
+            try:
+                if "FINNHUB_API_KEY" in st.secrets:
+                    return str(st.secrets["FINNHUB_API_KEY"]).strip()
+                if "finnhub_api_key" in st.secrets:
+                    return str(st.secrets["finnhub_api_key"]).strip()
+                if "finnhub" in st.secrets and isinstance(st.secrets["finnhub"], dict):
+                    return str(st.secrets["finnhub"].get("api_key", "")).strip()
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    return ""
+
+
 class FinnhubCalendarProvider(BaseCalendarProvider):
     """Fetches live economic calendar events from Finnhub API with graceful local fallback."""
 
@@ -80,7 +107,7 @@ class FinnhubCalendarProvider(BaseCalendarProvider):
     }
 
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or os.getenv("FINNHUB_API_KEY", "")
+        self.api_key = resolve_finnhub_api_key(api_key)
         self.fallback = FallbackScheduleProvider()
 
     def get_economic_events(self, from_date: date, to_date: date) -> List[MarketCatalyst]:

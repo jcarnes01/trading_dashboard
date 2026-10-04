@@ -69,7 +69,26 @@ class MockDataProvider(BaseDataProvider):
 
     def get_option_chain(self, symbol: str, expiration: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """Return mock call and put chain for symbol."""
-        if symbol == "QQQ":
+        if hasattr(self, "_symbol_chains") and symbol in self._symbol_chains:
+            calls, puts = self._symbol_chains[symbol]
+            return calls.copy(), puts.copy()
+
+        if symbol == "SPY":
+            strikes = [490.0, 495.0, 500.0, 505.0, 510.0, 515.0, 520.0]
+            calls = pd.DataFrame({
+                "strike": strikes,
+                "lastPrice": [16.0, 11.5, 7.2, 3.2, 1.1, 0.32, 0.08],
+                "openInterest": [2000, 3500, 7000, 9500, 16000, 5000, 1200],
+                "impliedVolatility": [0.18, 0.17, 0.16, 0.15, 0.14, 0.14, 0.15],
+            })
+            puts = pd.DataFrame({
+                "strike": strikes,
+                "lastPrice": [0.12, 0.35, 0.8, 2.8, 6.8, 11.2, 16.0],
+                "openInterest": [6000, 12000, 22000, 8000, 3000, 1000, 400],
+                "impliedVolatility": [0.22, 0.20, 0.18, 0.15, 0.15, 0.16, 0.17],
+            })
+            return calls, puts
+        elif symbol == "QQQ":
             strikes = [475.0, 480.0, 485.0, 490.0, 495.0, 500.0]
             calls = pd.DataFrame({
                 "strike": strikes,
@@ -112,3 +131,20 @@ class MockDataProvider(BaseDataProvider):
     def set_chains(self, calls: pd.DataFrame, puts: pd.DataFrame) -> None:
         """Allow callers to inject custom option chains."""
         self._chains = (calls, puts)
+
+    def set_option_chain(
+        self,
+        symbol: str,
+        calls_or_exp: object,
+        puts_or_calls: object = None,
+        puts: Optional[pd.DataFrame] = None,
+    ) -> None:
+        """Allow callers to inject custom option chains per symbol."""
+        if not hasattr(self, "_symbol_chains"):
+            self._symbol_chains = {}
+        if isinstance(calls_or_exp, str) and puts is not None:
+            # signature: (symbol, exp, calls, puts)
+            self._symbol_chains[symbol] = (puts_or_calls, puts)
+        else:
+            # signature: (symbol, calls, puts)
+            self._symbol_chains[symbol] = (calls_or_exp, puts_or_calls)
