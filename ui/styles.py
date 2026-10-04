@@ -8,7 +8,7 @@ def inject_custom_styles() -> None:
     <style>
         /* Compact typography & padding for responsive mobile screens */
         .block-container {
-            padding-top: 1.8rem;
+            padding-top: 3.5rem;
             padding-bottom: 2.5rem;
             max-width: 1200px;
         }

@@ -22,6 +22,8 @@ def render_header(
         st.caption(f"{session_text} • Refreshed: {payload.refreshed_at_str}")
 
     with col_controls:
+        # Subtle top margin to align controls with title and prevent clipping
+        st.markdown("<div style='height: 8px;'></div>", unsafe_allow_html=True)
         c_tick, c_refresh = st.columns([3, 2])
         with c_tick:
             selected_symbol = st.radio(
@@ -34,7 +36,7 @@ def render_header(
                 key="underlying_ticker_selector",
             )
         with c_refresh:
-            st.markdown("<div style='height: 18px;'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height: 24px;'></div>", unsafe_allow_html=True)
             auto_refresh = st.toggle("Auto-Refresh (60s)", value=False, key="auto_refresh_toggle")
 
     if payload.options_structure.is_fallback:
