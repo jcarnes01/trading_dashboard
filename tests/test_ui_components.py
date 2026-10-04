@@ -26,12 +26,21 @@ def test_inject_custom_styles(mock_markdown):
     mock_markdown.assert_called_once()
 
 
+@patch("streamlit.toggle", return_value=False)
+@patch("streamlit.radio", return_value="SPX")
+@patch("streamlit.columns")
 @patch("streamlit.caption")
 @patch("streamlit.title")
-def test_render_header(mock_title, mock_caption, mock_payload):
-    render_header(mock_payload)
+def test_render_header(mock_title, mock_caption, mock_columns, mock_radio, mock_toggle, mock_payload):
+    mock_columns.side_effect = [
+        [MagicMock(), MagicMock()],
+        [MagicMock(), MagicMock()],
+    ]
+    sym, auto_ref = render_header(mock_payload)
     mock_title.assert_called_with("SPX Morning Brief")
     mock_caption.assert_called_once()
+    assert sym == "SPX"
+    assert auto_ref is False
 
 
 @patch("streamlit.columns")
@@ -67,3 +76,16 @@ def test_render_macro_matrix(mock_subheader, mock_columns, mock_payload):
     ]
     render_macro_matrix(mock_payload.macro_snapshot)
     mock_subheader.assert_called_with("Macro Intermarket Matrix")
+
+
+@patch("streamlit.dataframe")
+@patch("streamlit.expander")
+@patch("streamlit.columns")
+@patch("streamlit.caption")
+@patch("streamlit.subheader")
+def test_render_catalysts_widget(mock_subheader, mock_caption, mock_columns, mock_expander, mock_df, mock_payload):
+    from ui.components.catalysts_widget import render_catalysts_widget
+
+    mock_columns.return_value = [MagicMock(), MagicMock(), MagicMock()]
+    render_catalysts_widget(mock_payload.catalysts)
+    mock_subheader.assert_called_with("Market Catalysts & Volatility Calendar")

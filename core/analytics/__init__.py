@@ -3,10 +3,12 @@ from core.analytics.options_engine import OptionsAnalyticsEngine
 from core.analytics.macro_engine import MacroAnalyticsEngine
 from core.analytics.scoring_engine import DirectionalScoringEngine
 from core.analytics.calendar_engine import CalendarAnalyticsEngine
+from core.analytics.session_engine import MarketSessionEngine
 
 __all__ = [
     "OptionsAnalyticsEngine",
     "MacroAnalyticsEngine",
     "DirectionalScoringEngine",
     "CalendarAnalyticsEngine",
+    "MarketSessionEngine",
 ]

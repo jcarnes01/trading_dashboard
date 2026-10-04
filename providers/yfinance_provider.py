@@ -11,11 +11,11 @@ class YFinanceProvider(BaseDataProvider):
 
     REQUIRED_OPTION_COLS = ["strike", "lastPrice", "openInterest", "impliedVolatility"]
 
-    def get_history(self, symbol: str, period: str = "7d") -> pd.DataFrame:
+    def get_history(self, symbol: str, period: str = "7d", interval: str = "1d") -> pd.DataFrame:
         """Fetch historical price series for a symbol via yfinance."""
         try:
             ticker = yf.Ticker(symbol)
-            df = ticker.history(period=period)
+            df = ticker.history(period=period, interval=interval)
             if df.empty or "Close" not in df.columns:
                 return pd.DataFrame()
 

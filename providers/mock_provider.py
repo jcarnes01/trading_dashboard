@@ -33,6 +33,8 @@ class MockDataProvider(BaseDataProvider):
         self._histories = {
             "^SPX": pd.DataFrame({"Close": [5000.0, 5010.0, 5020.0, 5035.0, 5050.0]}, index=dates),
             "SPY": pd.DataFrame({"Close": [500.0, 501.0, 502.0, 503.5, 505.0]}, index=dates),
+            "QQQ": pd.DataFrame({"Close": [480.0, 482.0, 485.0, 488.0, 492.0]}, index=dates),
+            "IWM": pd.DataFrame({"Close": [218.0, 219.0, 220.5, 222.0, 224.0]}, index=dates),
             "RSP": pd.DataFrame({"Close": [160.0, 161.0, 162.5, 164.0, 166.5]}, index=dates),
             "^VIX": pd.DataFrame({"Close": [16.5, 16.0, 15.8, 15.2, 14.5]}, index=dates),
             "^TNX": pd.DataFrame({"Close": [4.35, 4.32, 4.30, 4.25, 4.20]}, index=dates),
@@ -57,7 +59,7 @@ class MockDataProvider(BaseDataProvider):
         })
         self._chains = (calls, puts)
 
-    def get_history(self, symbol: str, period: str = "7d") -> pd.DataFrame:
+    def get_history(self, symbol: str, period: str = "7d", interval: str = "1d") -> pd.DataFrame:
         """Return registered or empty history DataFrame."""
         return self._histories.get(symbol, pd.DataFrame()).copy()
 
@@ -66,7 +68,38 @@ class MockDataProvider(BaseDataProvider):
         return list(self._expirations)
 
     def get_option_chain(self, symbol: str, expiration: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
-        """Return mock call and put chain."""
+        """Return mock call and put chain for symbol."""
+        if symbol == "QQQ":
+            strikes = [475.0, 480.0, 485.0, 490.0, 495.0, 500.0]
+            calls = pd.DataFrame({
+                "strike": strikes,
+                "lastPrice": [18.0, 14.0, 9.5, 5.2, 2.1, 0.8],
+                "openInterest": [3000, 4500, 8000, 12000, 15000, 6000],
+                "impliedVolatility": [0.20, 0.19, 0.18, 0.17, 0.17, 0.17],
+            })
+            puts = pd.DataFrame({
+                "strike": strikes,
+                "lastPrice": [0.9, 1.8, 3.5, 6.2, 10.5, 15.0],
+                "openInterest": [5000, 9000, 18000, 7000, 3000, 1000],
+                "impliedVolatility": [0.22, 0.21, 0.19, 0.18, 0.17, 0.17],
+            })
+            return calls, puts
+        elif symbol == "IWM":
+            strikes = [215.0, 220.0, 225.0, 230.0]
+            calls = pd.DataFrame({
+                "strike": strikes,
+                "lastPrice": [10.0, 6.0, 2.5, 0.8],
+                "openInterest": [2000, 5000, 9000, 3000],
+                "impliedVolatility": [0.24, 0.22, 0.20, 0.20],
+            })
+            puts = pd.DataFrame({
+                "strike": strikes,
+                "lastPrice": [0.8, 2.1, 5.5, 9.0],
+                "openInterest": [4000, 8000, 3000, 1000],
+                "impliedVolatility": [0.25, 0.23, 0.21, 0.21],
+            })
+            return calls, puts
+
         if self._chains is None:
             return pd.DataFrame(), pd.DataFrame()
         calls, puts = self._chains

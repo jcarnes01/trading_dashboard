@@ -58,7 +58,7 @@ def build_gex_profile_figure(structure: OptionsStructure) -> go.Figure:
         line_width=2,
         line_dash="dash",
         line_color="#facc15",
-        annotation_text="SPX Spot",
+        annotation_text=f"{structure.symbol} Spot",
         annotation_position="top left",
     )
 
@@ -97,7 +97,7 @@ def build_gex_profile_figure(structure: OptionsStructure) -> go.Figure:
 
     # Layout styling
     fig.update_layout(
-        title="<b>SPX Gamma Exposure (GEX) Profile by Strike</b>",
+        title=f"<b>{structure.symbol} Gamma Exposure (GEX) Profile by Strike</b>",
         xaxis_title="Strike Price",
         yaxis_title="Gamma Exposure ($ Millions)",
         barmode="relative",

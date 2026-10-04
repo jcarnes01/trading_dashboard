@@ -5,12 +5,12 @@ from core.models.options import OptionsStructure
 
 
 def render_structure_grid(structure: OptionsStructure) -> None:
-    """Render SPX spot, Open Interest walls, GEX barriers, and expected move range."""
-    st.subheader("SPX Structural Levels")
+    """Render underlying spot, Open Interest walls, GEX barriers, and expected move range."""
+    st.subheader(f"{structure.symbol} Structural Levels")
 
     # Primary Open Interest Barriers
     c1, c2, c3 = st.columns(3)
-    c1.metric("SPX Spot", f"{structure.underlying_spot:,.1f}")
+    c1.metric(f"{structure.symbol} Spot", f"{structure.underlying_spot:,.1f}")
     c2.metric("Put Wall (OI Support)", f"{structure.put_wall_oi:,.0f}")
     c3.metric("Call Wall (OI Resistance)", f"{structure.call_wall_oi:,.0f}")
 

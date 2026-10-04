@@ -115,13 +115,15 @@ trading_dashboard/
 │   │   ├── market.py            # Quote, MacroSnapshot
 │   │   ├── options.py           # StrikeGEX, OptionsStructure
 │   │   ├── signal.py            # BiasDirection, BiasSignal
-│   │   └── calendar.py          # OpexEvent
+│   │   ├── calendar.py          # OpexEvent
+│   │   └── session.py           # MarketSession
 │   └── analytics/               # Quantitative calculation engines
 │       ├── __init__.py
 │       ├── options_engine.py    # BS Gamma, OI walls, GEX profiles, Straddle
 │       ├── macro_engine.py      # RSP/SPY ratio trend, intermarket deltas
 │       ├── scoring_engine.py    # Bias calculation & playbook rule engine
-│       └── calendar_engine.py   # Monthly OpEx & Quad Witching calculations
+│       ├── calendar_engine.py   # Monthly OpEx & Quad Witching calculations
+│       └── session_engine.py    # US equity market session status (Pre/Open/After/Closed)
 ├── providers/                   # Data ingestion adapters
 │   ├── __init__.py
 │   ├── base.py                  # BaseDataProvider (Abstract Base Class / Protocol)
@@ -136,7 +138,8 @@ trading_dashboard/
 │   ├── styles.py                # CSS theming & mobile responsiveness
 │   ├── charts/                  # Interactive visual charting
 │   │   ├── __init__.py
-│   │   └── gex_chart.py         # Plotly GEX profile by strike
+│   │   ├── gex_chart.py         # Plotly GEX profile by strike
+│   │   └── price_chart.py       # Adjustable SPX price chart (1D/5D/1M/YTD/1Y) + level overlays
 │   └── components/              # Modular UI components
 │       ├── __init__.py
 │       ├── header.py            # Title, timestamp, refresh triggers
@@ -144,17 +147,19 @@ trading_dashboard/
 │       ├── structure_grid.py    # SPX spot, call wall, put wall, expected move
 │       ├── macro_matrix.py      # Intermarket indicators & delta metrics
 │       └── opex_widget.py       # Upcoming OpEx & Quad Witching countdowns
-├── tests/                       # Automated test suite (35 unit tests)
+├── tests/                       # Automated test suite (45 unit tests)
 │   ├── __init__.py
 │   ├── conftest.py              # Pytest fixtures & mock chains
 │   ├── test_auth.py             # Unit tests for authentication gate
 │   ├── test_calendar_engine.py  # Unit tests for OpEx & Quad Witching logic
 │   ├── test_gex_chart.py        # Unit tests for Plotly GEX builder
+│   ├── test_price_chart.py      # Unit tests for SPX price chart & timeframe fetching
 │   ├── test_options_engine.py   # Unit tests for walls, GEX & straddle computations
 │   ├── test_macro_engine.py     # Unit tests for RSP/SPY slope & % changes
 │   ├── test_scoring_engine.py   # Unit tests for bias scoring matrix
+│   ├── test_session_engine.py   # Unit tests for market trading session transitions
 │   ├── test_providers.py        # Contract tests for providers
-│   ├── test_services.py         # Unit tests for DashboardService
+│   ├── test_services.py         # Unit tests for DashboardService (multi-ticker & fallback)
 │   └── test_ui_components.py    # Unit tests for Streamlit UI rendering
 ├── app.py                       # Thin Streamlit bootstrap entry point
 ├── requirements.txt             # Project runtime dependencies

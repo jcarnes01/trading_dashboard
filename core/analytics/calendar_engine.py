@@ -77,3 +77,63 @@ class CalendarAnalyticsEngine:
                 curr_month += 1
 
         return events
+
+    def get_unified_catalysts(
+        self,
+        reference_date: Optional[date] = None,
+        economic_events: Optional[List["MarketCatalyst"]] = None,
+        count: int = 6,
+    ) -> List["MarketCatalyst"]:
+        """Merge options expiration events and macro economic catalysts into a unified timeline."""
+        from core.models.calendar import CatalystCategory, MarketCatalyst, VolatilityImpact
+
+        ref_date = reference_date if reference_date is not None else date.today()
+        opex_events = self.get_upcoming_opex_events(reference_date=ref_date, count=4)
+
+        all_catalysts: List[MarketCatalyst] = []
+
+        # 1. Map OpEx events into unified catalyst model
+        for opex in opex_events:
+            all_catalysts.append(
+                MarketCatalyst(
+                    title=opex.title,
+                    event_date=opex.event_date,
+                    days_remaining=opex.days_remaining,
+                    category=CatalystCategory.OPTIONS_STRUCTURE,
+                    impact=VolatilityImpact.STRUCTURAL,
+                    description=opex.description,
+                    is_quad_witching=opex.is_quad_witching,
+                    source="SCHEDULED",
+                )
+            )
+
+        # 2. Add economic catalysts if supplied
+        if economic_events:
+            for econ in economic_events:
+                if econ.event_date >= ref_date:
+                    days_left = (econ.event_date - ref_date).days
+                    all_catalysts.append(
+                        MarketCatalyst(
+                            title=econ.title,
+                            event_date=econ.event_date,
+                            days_remaining=days_left,
+                            category=econ.category,
+                            impact=econ.impact,
+                            description=econ.description,
+                            actual=econ.actual,
+                            estimate=econ.estimate,
+                            prior=econ.prior,
+                            unit=econ.unit,
+                            source=econ.source,
+                        )
+                    )
+
+        # 3. Sort chronologically by date, prioritizing HIGH impact if on the same date
+        impact_priority = {
+            VolatilityImpact.HIGH: 0,
+            VolatilityImpact.STRUCTURAL: 1,
+            VolatilityImpact.MEDIUM: 2,
+        }
+        all_catalysts.sort(key=lambda c: (c.event_date, impact_priority.get(c.impact, 3)))
+
+        return all_catalysts[:count]

@@ -50,3 +50,50 @@ def test_get_upcoming_opex_events():
     assert events[2].event_date == date(2026, 12, 18)
     assert events[2].is_quad_witching is True
     assert "Quad Witching" in events[2].title
+
+
+def test_get_unified_catalysts():
+    from core.models.calendar import CatalystCategory, MarketCatalyst, VolatilityImpact
+
+    engine = CalendarAnalyticsEngine()
+    ref = date(2026, 10, 4)
+
+    # Economic events: CPI on Oct 14, FOMC on Nov 4
+    econ_events = [
+        MarketCatalyst(
+            title="CPI Inflation Report",
+            event_date=date(2026, 10, 14),
+            days_remaining=10,
+            category=CatalystCategory.INFLATION,
+            impact=VolatilityImpact.HIGH,
+            description="Consumer Price Index",
+        ),
+        MarketCatalyst(
+            title="FOMC Rate Decision",
+            event_date=date(2026, 11, 4),
+            days_remaining=31,
+            category=CatalystCategory.CENTRAL_BANK,
+            impact=VolatilityImpact.HIGH,
+            description="Federal Reserve rate decision",
+        ),
+    ]
+
+    unified = engine.get_unified_catalysts(reference_date=ref, economic_events=econ_events, count=4)
+    assert len(unified) == 4
+
+    # Chronological ordering check:
+    # 1. CPI on Oct 14
+    # 2. Monthly OpEx on Oct 16
+    # 3. FOMC on Nov 4
+    # 4. Monthly OpEx on Nov 20
+    assert unified[0].title == "CPI Inflation Report"
+    assert unified[0].event_date == date(2026, 10, 14)
+
+    assert "Monthly OpEx" in unified[1].title
+    assert unified[1].event_date == date(2026, 10, 16)
+
+    assert unified[2].title == "FOMC Rate Decision"
+    assert unified[2].event_date == date(2026, 11, 4)
+
+    assert "Monthly OpEx" in unified[3].title
+    assert unified[3].event_date == date(2026, 11, 20)

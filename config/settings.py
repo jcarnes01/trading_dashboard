@@ -1,6 +1,17 @@
 """Centralized application settings and constants."""
 from dataclasses import dataclass, field
-from typing import Dict
+from typing import Dict, Optional
+
+
+@dataclass(frozen=True)
+class UnderlyingConfig:
+    """Configuration for an underlying equity/index asset."""
+    key: str
+    display_name: str
+    primary_symbol: str
+    fallback_symbol: str
+    fallback_multiplier: float
+    default_spot: float
 
 
 @dataclass(frozen=True)
@@ -8,6 +19,36 @@ class AppSettings:
     """Immutable application settings container."""
 
     # Ticker configurations
+    underlying_configs: Dict[str, UnderlyingConfig] = field(
+        default_factory=lambda: {
+            "SPX": UnderlyingConfig(
+                key="SPX",
+                display_name="S&P 500 (SPX)",
+                primary_symbol="^SPX",
+                fallback_symbol="SPY",
+                fallback_multiplier=10.0,
+                default_spot=5000.0,
+            ),
+            "QQQ": UnderlyingConfig(
+                key="QQQ",
+                display_name="Nasdaq 100 (QQQ)",
+                primary_symbol="QQQ",
+                fallback_symbol="QQQ",
+                fallback_multiplier=1.0,
+                default_spot=480.0,
+            ),
+            "IWM": UnderlyingConfig(
+                key="IWM",
+                display_name="Russell 2000 (IWM)",
+                primary_symbol="IWM",
+                fallback_symbol="IWM",
+                fallback_multiplier=1.0,
+                default_spot=220.0,
+            ),
+        }
+    )
+    supported_symbols: list[str] = field(default_factory=lambda: ["SPX", "QQQ", "IWM"])
+
     macro_tickers: Dict[str, str] = field(
         default_factory=lambda: {
             "SPY": "SPY",
@@ -47,6 +88,10 @@ class AppSettings:
             "friend": "alpha2026",
         }
     )
+
+    # Finnhub & Economic Calendar
+    finnhub_api_key: Optional[str] = None
+    calendar_cache_ttl_seconds: int = 3600
 
 
 # Global default instance

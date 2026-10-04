@@ -64,3 +64,23 @@ def test_dashboard_service_complete_fallback():
     assert payload.options_structure.underlying_spot == 5000.0
     assert payload.options_structure.call_wall_oi == 5050.0
     assert payload.options_structure.put_wall_oi == 4950.0
+
+
+def test_dashboard_service_multi_ticker_qqq_and_iwm():
+    mock_provider = MockDataProvider()
+    service = DashboardService(provider=mock_provider)
+
+    # Test QQQ payload
+    payload_qqq = service.get_dashboard_payload(symbol_key="QQQ")
+    assert payload_qqq.active_symbol == "QQQ"
+    assert payload_qqq.options_structure.symbol == "QQQ"
+    assert payload_qqq.options_structure.underlying_spot == 492.0
+    assert payload_qqq.options_structure.call_wall_oi == 495.0
+    assert payload_qqq.market_session is not None
+
+    # Test IWM payload
+    payload_iwm = service.get_dashboard_payload(symbol_key="IWM")
+    assert payload_iwm.active_symbol == "IWM"
+    assert payload_iwm.options_structure.symbol == "IWM"
+    assert payload_iwm.options_structure.underlying_spot == 224.0
+    assert payload_iwm.options_structure.call_wall_oi == 225.0

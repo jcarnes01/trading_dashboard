@@ -38,5 +38,6 @@ class OptionsStructure:
     expected_range_high: float = 0.0
 
     # Metadata & Health flags
+    symbol: str = "SPX"
     is_fallback: bool = False
     expiration_date: str = ""
